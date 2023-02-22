@@ -1,4 +1,5 @@
-﻿using PremiseContractsService.DTOs;
+﻿using FluentValidation;
+using PremiseContractsService.DTOs;
 using PremiseContractsService.Interfaces;
 
 namespace PremiseContractsAPI;
@@ -11,7 +12,8 @@ public static class Api
         app.MapPost("/Contracts", CreateContractAsync);
     }
 
-    private static async Task<IResult> GetContractsAsync(IPremiseContractsService service)
+    private static async Task<IResult> GetContractsAsync(
+        IPremiseContractsService service)
     {
         try
         {
@@ -24,12 +26,20 @@ public static class Api
         }
     }
     
-    private static async Task<IResult> CreateContractAsync(ContractCreateDto contractDto, IPremiseContractsService service)
+    private static async Task<IResult> CreateContractAsync(
+        ContractCreateDto contractDto,
+        IPremiseContractsService service,
+        IValidator<ContractCreateDto> validator)
     {
         try
         {
+            var validationResult = await validator.ValidateAsync(contractDto);
+            if (!validationResult.IsValid)
+            {
+                return Results.ValidationProblem(validationResult.ToDictionary());
+            }
             await service.CreateContract(contractDto);
-            return Results.Ok();
+            return Results.Created("/Contracts", contractDto);
         }
         catch (Exception ex)
         {

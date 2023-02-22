@@ -78,15 +78,15 @@ public class MyApiTests
         using (var scope = _factory.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<PremiseContractsContext>();
-            dbContext.Premises.Add(new Premise { Code = "Test7", Name = "Test71", Area = 500 });
-            dbContext.Equipment.Add(new Equipment { Code = "Test8", Name = "Test72", Area = 50 });
+            dbContext.Premises.Add(new Premise { Code = "Test711111", Name = "Test71", Area = 500 });
+            dbContext.Equipment.Add(new Equipment { Code = "Test811111", Name = "Test72", Area = 50 });
             dbContext.SaveChanges();
         }
 
         var contract = new ContractCreateDto
         {
-            PremiseCode = "Test7",
-            EquipmentCode = "Test8",
+            PremiseCode = "Test711111",
+            EquipmentCode = "Test811111",
             Quantity = 1
         };
 
@@ -94,7 +94,7 @@ public class MyApiTests
         var response = await _client.PostJsonAsync("/Contracts", contract);
 
         // Assert
-        response.Should().Be200Ok();
+        response.Should().Be201Created();
     }
 
     [Test]
@@ -104,15 +104,15 @@ public class MyApiTests
         using (var scope = _factory.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<PremiseContractsContext>();
-            dbContext.Premises.Add(new Premise { Code = "Test3", Name = "Test31", Area = 500 });
-            dbContext.Equipment.Add(new Equipment { Code = "Test4", Name = "Test42", Area = 50 });
+            dbContext.Premises.Add(new Premise { Code = "Test311111", Name = "Test31", Area = 500 });
+            dbContext.Equipment.Add(new Equipment { Code = "Test411111", Name = "Test42", Area = 50 });
             dbContext.SaveChanges();
         }
 
         var contract = new ContractCreateDto
         {
-            PremiseCode = "Test3",
-            EquipmentCode = "Test4",
+            PremiseCode = "Test311111",
+            EquipmentCode = "Test411111",
             Quantity = 20
         };
 
@@ -139,8 +139,8 @@ public class MyApiTests
 
         var contract = new ContractCreateDto
         {
-            PremiseCode = "Test611",
-            EquipmentCode = "Test765",
+            PremiseCode = "Test611111",
+            EquipmentCode = "Test765111",
             Quantity = 20
         };
 
@@ -154,21 +154,53 @@ public class MyApiTests
     }
 
     [Test]
-    public async Task TaskCreateContractAsync_ShouldThrowAnExceptionIfQuantityLessThanOne()
+    public async Task TaskCreateContractAsync_ShouldFailValidationIfPremiseCodeDoesNotContainTenSymbols()
     {
         // Arrange
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var dbContext = scope.ServiceProvider.GetRequiredService<PremiseContractsContext>();
-            dbContext.Premises.Add(new Premise { Code = "Test555", Name = "Test55", Area = 500 });
-            dbContext.Equipment.Add(new Equipment { Code = "Test777", Name = "Test77", Area = 50 });
-            dbContext.SaveChanges();
-        }
-
         var contract = new ContractCreateDto
         {
             PremiseCode = "Test555",
+            EquipmentCode = "Test777111",
+            Quantity = 1
+        };
+
+        // Act
+        var response = await _client.PostJsonAsync("/Contracts", contract);
+
+        // Assert
+        response.Should()
+            .HaveError("Quanity should be 1 or more")
+            .And.Be400BadRequest();
+    }
+
+    [Test]
+    public async Task TaskCreateContractAsync_ShouldFailValidationIfEquipmentCodeDoesNotContainTenSymbols()
+    {
+        // Arrange
+        var contract = new ContractCreateDto
+        {
+            PremiseCode = "Test555111",
             EquipmentCode = "Test777",
+            Quantity = 1
+        };
+
+        // Act
+        var response = await _client.PostJsonAsync("/Contracts", contract);
+
+        // Assert
+        response.Should()
+            .HaveError("Quanity should be 1 or more")
+            .And.Be400BadRequest();
+    }
+
+    [Test]
+    public async Task TaskCreateContractAsync_ShouldFailValidationIfQuantityLessThanOne()
+    {
+        // Arrange
+        var contract = new ContractCreateDto
+        {
+            PremiseCode = "Test555111",
+            EquipmentCode = "Test777111",
             Quantity = 0
         };
 
@@ -177,7 +209,7 @@ public class MyApiTests
 
         // Assert
         response.Should()
-            .HaveError("Quantity should be 1 or higher")
-            .And.Be500InternalServerError();
+            .HaveError("Quanity should be 1 or more")
+            .And.Be400BadRequest();
     }
 }

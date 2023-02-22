@@ -1,9 +1,9 @@
 using DataAccess;
-using DataAccess.Data;
-using Microsoft.EntityFrameworkCore;
+using FluentValidation;
 using Microsoft.OpenApi.Models;
 using PremiseContractsAPI;
 using PremiseContractsAPI.Middleware;
+using PremiseContractsAPI.Validation;
 using PremiseContractsService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDataAccess(builder.Configuration);
 builder.Services.AddPremiseContractsService();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddValidatorsFromAssemblyContaining<ContractValidator>();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Api Key Auth", Version = "v1" });
