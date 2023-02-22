@@ -121,7 +121,7 @@ public class MyApiTests
 
         // Assert
         response.Should()
-            .HaveError("Not enough free premise's area for this equipment quantity")
+            .HaveErrorMessage("Not enough free premise's area for this equipment quantity")
             .And.Be500InternalServerError();
     }
 
@@ -149,7 +149,7 @@ public class MyApiTests
 
         // Assert
         response.Should()
-            .HaveError("Premise or equipment does not exist")
+            .HaveErrorMessage("Premise or equipment does not exist")
             .And.Be500InternalServerError();
     }
 
@@ -169,7 +169,7 @@ public class MyApiTests
 
         // Assert
         response.Should()
-            .HaveError("Quanity should be 1 or more")
+            .HaveErrorMessage("Premise code should contain only 10 symbols")
             .And.Be400BadRequest();
     }
 
@@ -189,7 +189,7 @@ public class MyApiTests
 
         // Assert
         response.Should()
-            .HaveError("Quanity should be 1 or more")
+            .HaveErrorMessage("Equipment code should contain only 10 symbols")
             .And.Be400BadRequest();
     }
 
@@ -209,7 +209,7 @@ public class MyApiTests
 
         // Assert
         response.Should()
-            .HaveError("Quanity should be 1 or more")
+            .HaveErrorMessage("Quanity should be 1 or more")
             .And.Be400BadRequest();
     }
 }
