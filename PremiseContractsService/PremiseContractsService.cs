@@ -40,6 +40,10 @@ public class PremiseContractsService : IPremiseContractsService
         {
             throw new Exception("Premise or equipment does not exist");
         }
+        if (contractDto.Quantity <= 0)
+        {
+            throw new Exception("Quantity should be 1 or higher");
+        }
         var contracts = await _contractRepository.GetAllAsync();
         var usedEquipmentArea = contracts.Where(c => c.PremiseCode == contractDto.PremiseCode).Sum(c => c.Quantity * c.Equipment.Area);
         var premiseAreaTotal = premise.Area;

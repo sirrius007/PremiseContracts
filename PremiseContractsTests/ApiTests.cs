@@ -4,10 +4,9 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using PremiseContractsService.DTOs;
-using System.Text;
+using PremiseContractsTests.Extensions;
 
 namespace PremiseContractsTests;
 
@@ -37,6 +36,7 @@ public class MyApiTests
                 });
             });
         _client = _factory.CreateClient();
+        _client.DefaultRequestHeaders.Add("XApiKey", "643fc18bf655df20be800fbf3c9608e2244d0673c1860b1622611a75b1e1ed2a");
     }
 
     [TearDown]
@@ -91,7 +91,7 @@ public class MyApiTests
         };
 
         // Act
-        var response = await _client.PostAsync("/Contracts", new StringContent(JsonConvert.SerializeObject(contract), Encoding.UTF8, "application/json"));
+        var response = await _client.PostJsonAsync("/Contracts", contract);
 
         // Assert
         response.Should().Be200Ok();
@@ -117,7 +117,7 @@ public class MyApiTests
         };
 
         // Act
-        var response = await _client.PostAsync("/Contracts", new StringContent(JsonConvert.SerializeObject(contract), Encoding.UTF8, "application/json"));
+        var response = await _client.PostJsonAsync("/Contracts", contract);
 
         // Assert
         response.Should()
@@ -145,11 +145,39 @@ public class MyApiTests
         };
 
         // Act
-        var response = await _client.PostAsync("/Contracts", new StringContent(JsonConvert.SerializeObject(contract), Encoding.UTF8, "application/json"));
+        var response = await _client.PostJsonAsync("/Contracts", contract);
 
         // Assert
         response.Should()
             .HaveError("Premise or equipment does not exist")
+            .And.Be500InternalServerError();
+    }
+
+    [Test]
+    public async Task TaskCreateContractAsync_ShouldThrowAnExceptionIfQuantityLessThanOne()
+    {
+        // Arrange
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var dbContext = scope.ServiceProvider.GetRequiredService<PremiseContractsContext>();
+            dbContext.Premises.Add(new Premise { Code = "Test555", Name = "Test55", Area = 500 });
+            dbContext.Equipment.Add(new Equipment { Code = "Test777", Name = "Test77", Area = 50 });
+            dbContext.SaveChanges();
+        }
+
+        var contract = new ContractCreateDto
+        {
+            PremiseCode = "Test555",
+            EquipmentCode = "Test777",
+            Quantity = 0
+        };
+
+        // Act
+        var response = await _client.PostJsonAsync("/Contracts", contract);
+
+        // Assert
+        response.Should()
+            .HaveError("Quantity should be 1 or higher")
             .And.Be500InternalServerError();
     }
 }
